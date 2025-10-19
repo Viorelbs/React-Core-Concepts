@@ -450,24 +450,6 @@
           </div>
         </div>
 
-        <!-- <div class="visual-diagram"> -->
-        <!--   <h3 style="color: #61dafb; text-align: center; margin-bottom: 30px"> -->
-        <!--     Component Tree -->
-        <!--   </h3> -->
-        <!--   <div class="component-tree"> -->
-        <!--     <div class="component-box">App</div> -->
-        <!--     <div class="connector"></div> -->
-        <!--     <div class="component-children"> -->
-        <!--       <div class="component-child">Header</div> -->
-        <!--       <div class="component-child">Content</div> -->
-        <!--       <div class="component-child">Footer</div> -->
-        <!--     </div> -->
-        <!--   </div> -->
-        <!--   <p style="text-align: center; margin-top: 20px; color: #a0a0a0"> -->
-        <!--     Components can contain other components, creating a tree structure -->
-        <!--   </p> -->
-        <!-- </div> -->
-
         <div class="simple-example">
           <h3 style="color: #61dafb; margin-bottom: 15px">
             Real Example: User Card
@@ -574,38 +556,52 @@
           </h3>
           <p style="margin-bottom: 15px">
             React runs your components twice in development to make sure they're
-            "pure" - meaning they don't have unexpected side effects.
+            "pure" - meaning they don't have unexpected side effects. This helps
+            catch bugs that only appear with Strict Mode!
           </p>
 
           <div class="grid-2">
             <div class="example-card">
-              <h4>❌ Bad (Will Cause Issues)</h4>
+              <h4>❌ Bug Hidden Without Strict Mode</h4>
               <div class="code-block" style="margin-top: 10px">
-                <pre><span class="keyword">let</span> count = 0;
-
-<span class="keyword">function</span> <span class="function">Counter</span>() {
-  count++; <span class="comment">// Don't do this!</span>
-  <span class="keyword">return</span> &lt;<span class="keyword">div</span>&gt;{count}&lt;/<span class="keyword">div</span>&gt;;
+                <pre><span class="keyword">function</span> <span class="function">UserProfile</span>() {
+  <span class="keyword">const</span> [data, setData] = useState(<span class="keyword">null</span>);
+  
+  <span class="comment">// Bug: Effect runs twice in Strict Mode</span>
+  <span class="comment">// Without cleanup, creates duplicate subscriptions!</span>
+  useEffect(() =&gt; {
+    <span class="keyword">const</span> subscription = subscribeToUser();
+    <span class="comment">// Missing cleanup! ⚠️</span>
+  }, []);
+  
+  <span class="keyword">return</span> &lt;<span class="keyword">div</span>&gt;{data}&lt;/<span class="keyword">div</span>&gt;;
 }</pre>
               </div>
               <p style="margin-top: 10px; color: #ff7b72">
-                This will give unexpected results because the variable changes
-                every render.
+                Without Strict Mode, this bug is hidden. With Strict Mode, the
+                duplicate subscription becomes obvious!
               </p>
             </div>
 
             <div class="example-card">
-              <h4>✅ Good (Works Correctly)</h4>
+              <h4>✅ Fixed With Cleanup</h4>
               <div class="code-block" style="margin-top: 10px">
-                <pre><span class="keyword">function</span> <span class="function">Counter</span>() {
-  <span class="keyword">const</span> [count, setCount] = useState(0);
+                <pre><span class="keyword">function</span> <span class="function">UserProfile</span>() {
+  <span class="keyword">const</span> [data, setData] = useState(<span class="keyword">null</span>);
   
-  <span class="keyword">return</span> &lt;<span class="keyword">div</span>&gt;{count}&lt;/<span class="keyword">div</span>&gt;;
+  useEffect(() =&gt; {
+    <span class="keyword">const</span> subscription = subscribeToUser();
+    
+    <span class="comment">// Cleanup function prevents duplicates ✓</span>
+    <span class="keyword">return</span> () =&gt; subscription.unsubscribe();
+  }, []);
+  
+  <span class="keyword">return</span> &lt;<span class="keyword">div</span>&gt;{data}&lt;/<span class="keyword">div</span>&gt;;
 }</pre>
               </div>
               <p style="margin-top: 10px; color: #4caf50">
-                Using useState keeps everything predictable and working
-                correctly.
+                Proper cleanup ensures effects work correctly even when run
+                twice!
               </p>
             </div>
           </div>
